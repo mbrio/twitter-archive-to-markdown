@@ -1,0 +1,35 @@
+{
+  "name": "twitter-archive-to-markdown",
+  "version": "0.1.0",
+  "description": "A tool for converting Twitter archive data in JSON format to Markdown",
+  "main": "app.js",
+  "dependencies": {
+    "lodash": "~2.4.1",
+    "mkdirp": "~0.4.0",
+    "moment": "~2.6.0",
+    "commander": "~2.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:mbrio/twitter-archive-to-markdown.git"
+  },
+  "keywords": [
+    "twitter",
+    "archive",
+    "convert",
+    "markdown"
+  ],
+  "author": "Michael Diolosa",
+  "license": {
+    "type": "MIT",
+    "url": "http://www.opensource.org/licenses/mit-license.php"
+  },
+  "bugs": {
+    "url": "https://github.com/mbrio/twitter-archive-to-markdown/issues"
+  },
+  "homepage": "https://github.com/mbrio/twitter-archive-to-markdown"
+}
