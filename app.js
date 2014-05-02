@@ -26,14 +26,7 @@ let moment = require('moment');
 let Grailbird = { data: {} };
 
 function escapeMarkdown(text) {
-  [[/\\/g, '\\'], [/_/g, '_'], [/-/g, '-'], [/\*/g, '*'],
-   [/\+/g, '+'], [/\./g, '.'], [/\!/g, '!'], [/`/g, '`'],
-   [/\{/g, '{'], [/\}/g, '}'], [/\(/g, '('], [/\)/g, ')'],
-   [/\[/g, '['], [/\]/g, ']'], [/#/g, '#']].map(function (val) {
-    text = text.replace(val[0], '\\' + val[1]);
-  });
-
-  return text;
+  return text.replace(/([\\_\-*+.!`{}()\[\]#])/g, '\\$1');
 }
 
 let fileList = fs.readdirSync(dir);
@@ -111,11 +104,11 @@ for(let key in Grailbird.data) {
 
     if (tweet.geo.type) {
       if (tweet.geo.type.toLowerCase() === 'point') {
-        text += '\nLocation: [' + tweet.geo.coordinates[0] + ', ' + tweet.geo.coordinates[1] + '](https://www.google.com/maps/@' + tweet.geo.coordinates[0] + ',' + tweet.geo.coordinates[1] + ',13z)';
+        text += '\nLocation: [' + escapeMarkdown(tweet.geo.coordinates[0] + ', ' + tweet.geo.coordinates[1]) + '](https://www.google.com/maps/@' + tweet.geo.coordinates[0] + ',' + tweet.geo.coordinates[1] + ',13z)';
       }
     }
 
-    text += '\nCreated At: ' + createdAt;
+    text += '\nCreated At: ' + escapeMarkdown(createdAt.toString());
 
     let momDate = moment(createdAt);
     let dateString = momDate.format('YYYYMMDDHHmmss');
