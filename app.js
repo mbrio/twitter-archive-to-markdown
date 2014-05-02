@@ -25,12 +25,8 @@ let _ = require('lodash');
 let moment = require('moment');
 let Grailbird = { data: {} };
 
-/*
-\
-*/
-
 function escapeMarkdown(text) {
-  [[/_/g, '_'], [/-/g, '-'], [/\*/g, '*'],
+  [[/\\/g, '\\'], [/_/g, '_'], [/-/g, '-'], [/\*/g, '*'],
    [/\+/g, '+'], [/\./g, '.'], [/\!/g, '!'], [/`/g, '`'],
    [/\{/g, '{'], [/\}/g, '}'], [/\(/g, '('], [/\)/g, ')'],
    [/\[/g, '['], [/\]/g, ']'], [/#/g, '#']].map(function (val) {
@@ -111,7 +107,7 @@ for(let key in Grailbird.data) {
 
     text = '> ' + rt + '[@' + escapeMarkdown(tweet.user.screen_name) + '](http://twitter.com/' + tweet.user.screen_name + '): ' + text;
 
-    text = text.replace('\n', '\n> ') + '\n';
+    text = text.replace(/\n/g, '\n> ') + '\n';
 
     if (tweet.geo.type) {
       if (tweet.geo.type.toLowerCase() === 'point') {
