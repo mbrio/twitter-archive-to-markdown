@@ -25,6 +25,21 @@ let _ = require('lodash');
 let moment = require('moment');
 let Grailbird = { data: {} };
 
+/*
+\
+*/
+
+function escapeMarkdown(text) {
+  [[/_/g, '_'], [/-/g, '-'], [/\*/g, '*'],
+   [/\+/g, '+'], [/\./g, '.'], [/\!/g, '!'], [/`/g, '`'],
+   [/\{/g, '{'], [/\}/g, '}'], [/\(/g, '('], [/\)/g, ')'],
+   [/\[/g, '['], [/\]/g, ']'], [/#/g, '#']].map(function (val) {
+    text = text.replace(val[0], '\\' + val[1]);
+  });
+
+  return text;
+}
+
 let fileList = fs.readdirSync(dir);
 
 for (let m = 0, n = fileList.length; m < n; m++) {
@@ -43,7 +58,7 @@ for(let key in Grailbird.data) {
 
     if (tweet.retweeted_status) {
       tweet = tweet.retweeted_status;
-      rt = '[@' + origTweet.user.screen_name + '](http://twitter.com/' + tweet.user.screen_name + '): RT ';
+      rt = '[@' + escapeMarkdown(origTweet.user.screen_name) + '](http://twitter.com/' + origTweet.user.screen_name + '): RT ';
     }
 
     let text = tweet.text;
@@ -64,32 +79,39 @@ for(let key in Grailbird.data) {
         return a.indices[0] - b.indices[0];
       });
 
-      for (let x = 0, y = entities.length; x < y; x++) {
-        let entity = entities[x];
-        let pre = text.substr(0, entity.indices[0] + offset);
-        let post = text.substr(entity.indices[1] + offset);
-        let len = entity.indices[1] - entity.indices[0];
-        
-        let md = null;
+      let previousIndex = 0;
+      let split = [];
 
-        if (entity.screen_name) {
-          md = '[@' + entity.screen_name + '](http://twitter.com/' + entity.screen_name + ')';
-        } else if (entity.text) {
-          md = '[#' + entity.text + '](http://twitter.com/search?q=%23' + entity.text + ')';
-        } else if (entity.sizes) {
-          md = '[' + entity.display_url + '](' + entity.media_url + ')';
-        } else if (entity.display_url) {
-          md = '[' + entity.display_url + '](' + entity.expanded_url + ')';
-        }
+      entities.map(function (entity) {
+        split.push({ text: escapeMarkdown(tweet.text.substring(previousIndex, entity.indices[0])) });
+        split.push({ entity: entity });
+        previousIndex = entity.indices[1];
+      });
 
-        if (md !== null) {
-          offset += md.length - len;
-          text = pre + md + post;
+      split.push({ text: escapeMarkdown(tweet.text.substring(previousIndex)) });
+
+      text = '';
+      split.map(function (val) {
+        if (val.entity) {
+          let entity = val.entity;
+          if (entity.screen_name) {
+            text += '[@' + escapeMarkdown(entity.screen_name) + '](http://twitter.com/' + entity.screen_name + ')';
+          } else if (entity.text) {
+            text += '[' + escapeMarkdown('#' + entity.text) + '](http://twitter.com/search?q=%23' + entity.text + ')';
+          } else if (entity.sizes) {
+            text += '[' + escapeMarkdown(entity.display_url) + '](' + entity.media_url + ')';
+          } else if (entity.display_url) {
+            text += '[' + escapeMarkdown(entity.display_url) + '](' + entity.expanded_url + ')';
+          }
+        } else {
+          text += val.text;
         }
-      }
+      });
     }
 
-    text = '> ' + rt + '[@' + tweet.user.screen_name + '](http://twitter.com/' + tweet.user.screen_name + '): ' + text + '\n';
+    text = '> ' + rt + '[@' + escapeMarkdown(tweet.user.screen_name) + '](http://twitter.com/' + tweet.user.screen_name + '): ' + text;
+
+    text = text.replace('\n', '\n> ') + '\n';
 
     if (tweet.geo.type) {
       if (tweet.geo.type.toLowerCase() === 'point') {
@@ -106,6 +128,7 @@ for(let key in Grailbird.data) {
     let outDir = path.join(out, yearString, monthString);
     mkdirp.sync(outDir);
     let outFilePath = path.join(outDir, dateString + '.md');
+
     fs.writeFileSync(outFilePath, text, { encoding: 'utf-8' });
   }
 }
